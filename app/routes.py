@@ -11,11 +11,11 @@ def logout():
     pass
 
 
-@app.route('/register',methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register():
     pass
 
 
-@app.route('/reset',methods=['POST'])
+@app.route('/reset', methods=['POST'])
 def reset():
     pass

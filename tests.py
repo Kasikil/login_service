@@ -3,13 +3,16 @@ import unittest
 from app import app
 
 class UserModelCase(unittest.TestCase):
+    # Special method
     def setUp(self):
         pass
 
+    # Special method
     def tearDown(self):
         pass
-
-    def test_feature(self):
+    
+    # Standard method
+    def test_feature_example(self):
         pass
 
 if __name__ == '__main__':
