@@ -12,3 +12,5 @@ Which is the documentation for the API.
 
 https://swagger.io/docs/specification/about/
 https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md
+
+flask run
