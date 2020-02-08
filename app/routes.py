@@ -14,3 +14,8 @@ def logout():
 @app.route('/register',methods=['POST'])
 def register():
     pass
+
+
+@app.route('/reset',methods=['GET'])
+def reset():
+    pass
