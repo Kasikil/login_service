@@ -16,6 +16,6 @@ def register():
     pass
 
 
-@app.route('/reset',methods=['GET'])
+@app.route('/reset',methods=['POST'])
 def reset():
     pass
