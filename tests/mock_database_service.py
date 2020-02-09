@@ -10,9 +10,10 @@ def mocked_requests_database_post(*args, **kwargs):
         def json(self):
             return self.json_data
 
-    if args[0] == str(Config['database_url'] + 'login'):
-        return MockResponse({'username': 'Psweet', 'password': 'dollas'}, 200)
-    elif args[1] == str(Config['database_url'] + 'register'):
+    if args[0] == str(Config.database_url + 'login'):
+        return MockResponse({'username': Config.good_test_user,
+                             'password': Config.good_test_password}, 200)
+    elif args[1] == str(Config.database_url + 'register'):
         pass
 
     return MockResponse(None, 404)
