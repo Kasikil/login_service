@@ -34,24 +34,32 @@ def login():
     return {'error': 'Something went wrong. You shouldn\'t be here'}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-@app.route('/logout', methods=['POST'])
-def logout():
-    # Lookup what logging out means. Probably something with returning 
-    # a new expired cookie or a null cookie or who knows what they want here
-    pass
-
-
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
-    data['username']
-    data['password']
-    data['email']
+    try:
+        json_pack = {'username': data['username'], 'password': data['password'], 'email': data['email']}
+    except KeyError as e:
+        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
     # Query the database to check if username exists
-    # If username exists, return 400 {with username taken error message}
-    # If username does not exist, attempt to save data to the database
-    # If saving to the database succeeds, return 200
-    # If saving to the database fails, return 500 {something on our end went wrong}
+    # TODO: Talk to Strum. Single database call or multiple database call to validate username, email, etc?
+    try:
+        response = requests.post(Config.database_url + 'register', json=json_pack)
+    except Exception as e:
+        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    if status.is_server_error(response.status_code):
+        return {'error': 'Error in saving data to the database'}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    json_response = response.json()
+    if 'error' in json_response:
+        return {'error': json_response['error']}, status.HTTP_400_BAD_REQUEST
+    else:
+        return {'': ''}, status.HTTP_200_OK
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    # Lookup what logging out means. Probably something with returning
+    # a new expired cookie or a null cookie or who knows what they want here
     pass
 
 
