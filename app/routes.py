@@ -1,21 +1,34 @@
 from app import app
+from config import Config
 from flask import request
 from flask_api import status
+import requests
 
 
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json(force=True)
-    data['username']
-    data['password']
-    # Sanitize the username and password at this step to prevent SQL INJECTION ATTACKS
+    try:
+        json_pack = {'username': data['username']}
+    except KeyError as e:
+        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
     # Query the database here for the username and its associated password
+    try:
+        response = requests.post(Config.database_url + 'login', json=json_pack)
+    except Exception as e:
+        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    json_response = response.json()
     # If the username does not exist, return 400 {with username error message}
+    if 'username' not in json_response:
+        return {'error': 'No matched user found'}, status.HTTP_400_BAD_REQUEST
     # If the username does exist, check if the passwords match
-    # If the passwords do not match, return 400 {with password error message}
-    # If the passwords do match, return 200 {with a login cookie to bind to the client}
-    # return {'username': data['username'], 'password': data['password']}, status.HTTP_200_OK
-    pass
+    if 'password' in json_response:
+        if json_response['password'] == data['password']:
+            # TODO: Make a login cookie, whatever that is
+            return {'': ''}, status.HTTP_200_OK
+        else:
+            return {'error': 'Password entered does not match the record'}, status.HTTP_400_BAD_REQUEST
+    return {'error': 'Something went wrong. You shouldn\'t be here'}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @app.route('/logout', methods=['POST'])
@@ -31,7 +44,6 @@ def register():
     data['username']
     data['password']
     data['email']
-    # Sanitize all inputs to prevent SQL INJECTION ATTACKS
     # Query the database to check if username exists
     # If username exists, return 400 {with username taken error message}
     # If username does not exist, attempt to save data to the database
