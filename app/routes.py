@@ -23,11 +23,14 @@ def login():
         return {'error': 'No matched user found'}, status.HTTP_400_BAD_REQUEST
     # If the username does exist, check if the passwords match
     if 'password' in json_response:
-        if json_response['password'] == data['password']:
-            # TODO: Make a login cookie, whatever that is
-            return {'': ''}, status.HTTP_200_OK
-        else:
-            return {'error': 'Password entered does not match the record'}, status.HTTP_400_BAD_REQUEST
+        try:
+            if json_response['password'] == data['password']:
+                # TODO: Make a login cookie, whatever that is
+                return {'': ''}, status.HTTP_200_OK
+            else:
+                return {'error': 'Password entered does not match the record'}, status.HTTP_400_BAD_REQUEST
+        except KeyError as e:
+            return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
     return {'error': 'Something went wrong. You shouldn\'t be here'}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
