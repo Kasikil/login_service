@@ -28,6 +28,11 @@ class UserModelCase(unittest.TestCase):
         bad_creds = {}
         with app.test_client() as client:
             response = client.post('/login', data=bad_creds)
+            self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_logout_success(self):
+        with app.test_client() as client:
+            response = client.post('/logout')
 
 
 if __name__ == '__main__':
