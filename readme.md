@@ -4,6 +4,10 @@ To run this service:
 
 Start the virtual environment with this command in a terminal/command prompt: venv\Scripts\activate 
 
+To make a new database migration based on the models: flask db migrate
+
+To upgrade the current database to the current database version: flask db upgrade
+
 Run the following command to start the service: flask run
 
 To run the unit tests, run: python -m unittest tests\tests.py
@@ -21,3 +25,5 @@ Which is the documentation for the API.
 
 https://swagger.io/docs/specification/about/
 https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md
+
+C:\xampp\mysql\bin\mysql.exe -u root -p <password>
