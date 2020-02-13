@@ -2,6 +2,7 @@ from app import app
 from config import Config
 from flask import request
 from flask_api import status
+import jwt
 import requests
 
 
@@ -25,8 +26,10 @@ def login():
     if 'password' in json_response:
         try:
             if json_response['password'] == data['password']:
-                # TODO: Make a login cookie, whatever that is
-                return {'': ''}, status.HTTP_200_OK
+                # TODO: Populate the token
+                jwt_content = {}
+                token = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
+                return {'token': token}, status.HTTP_200_OK
             else:
                 return {'error': 'Password entered does not match the record'}, status.HTTP_400_BAD_REQUEST
         except KeyError as e:
@@ -38,7 +41,7 @@ def login():
 def register():
     data = request.get_json(force=True)
     try:
-        json_pack = {'username': data['username'], 'password': data['password'], 'email': data['email']}
+        json_pack = {'username': data['username'], 'password': data['password']}
     except KeyError as e:
         return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
     # Query the database to check if username exists
