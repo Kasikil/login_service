@@ -62,6 +62,11 @@ class UserModelCase(unittest.TestCase):
             response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
+    def test_login_get(self):
+        with app.test_client() as client:
+            response = client.get('/login')
+            self.assertTrue(status.is_client_error(response.status_code))
+
     # Register Tests
     def test_register_success(self):
         test_credentials = {'username': Config.new_user, 'password': Config.new_password,
@@ -96,6 +101,11 @@ class UserModelCase(unittest.TestCase):
                             'auth_token': Config.bad_test_token}
         with app.test_client() as client:
             response = client.post('/register', json=test_credentials)
+            self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_register_get(self):
+        with app.test_client() as client:
+            response = client.get('/register')
             self.assertTrue(status.is_client_error(response.status_code))
 
 
