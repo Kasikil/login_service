@@ -15,12 +15,7 @@ def login():
         json_pack = {'username': data['username'], 'password': data['password']}
     except KeyError as e:
         return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    try:
-        login_user = User.query.filter_by(username=json_pack['username']).first()
-    except Exception as e:
-        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
-        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
-               status.HTTP_500_INTERNAL_SERVER_ERROR
+    login_user = User.query.filter_by(username=json_pack['username']).first()
     if login_user is None:
         return {'error': 'No matched user found'}, status.HTTP_400_BAD_REQUEST
     if login_user.check_password(json_pack['password']):
@@ -40,22 +35,12 @@ def register():
         json_pack = {'username': data['username'], 'password': data['password']}
     except KeyError as e:
         return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    try:
-        existing_user = User.query.filter_by(username=json_pack['username']).first()
-    except Exception as e:
-        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
-        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
-               status.HTTP_500_INTERNAL_SERVER_ERROR
+    existing_user = User.query.filter_by(username=json_pack['username']).first()
     if existing_user is not None:
         return {'error': 'Username already taken: {}'.format(json_pack['username'])}, status.HTTP_406_NOT_ACCEPTABLE
-    try:
-        new_user = User(username=json_pack['username'], password=json_pack['password'])
-        db.session.add(new_user)
-        db.session.commit()
-    except Exception as e:
-        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
-        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
-               status.HTTP_500_INTERNAL_SERVER_ERROR
+    new_user = User(username=json_pack['username'], password=json_pack['password'])
+    db.session.add(new_user)
+    db.session.commit()
     expire_time = datetime.timestamp(datetime.now() + timedelta(Config.cookie_expiration_time))
     jwt_content = {'id': new_user.id, 'username': new_user.username, 'expires': expire_time}
     token_bytes = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
