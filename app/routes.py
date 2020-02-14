@@ -1,4 +1,4 @@
-from app import app
+from app import app, db
 from config import Config
 from datetime import datetime, timedelta
 from flask import request
@@ -39,20 +39,28 @@ def register():
     try:
         json_pack = {'username': data['username'], 'password': data['password']}
     except KeyError as e:
-        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    # Query the database to check if username exists
-    # TODO: Talk to Strum. Single database call or multiple database call to validate username, email, etc?
+        return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_500_INTERNAL_SERVER_ERROR
     try:
-        response = requests.post(Config.database_url + 'register', json=json_pack)
+        existing_user = User.query.filter_by(username=json_pack['username']).first()
     except Exception as e:
-        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    if status.is_server_error(response.status_code):
-        return {'error': 'Error in saving data to the database'}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    json_response = response.json()
-    if 'error' in json_response:
-        return {'error': json_response['error']}, status.HTTP_400_BAD_REQUEST
-    else:
-        return {'': ''}, status.HTTP_200_OK
+        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
+        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
+               status.HTTP_500_INTERNAL_SERVER_ERROR
+    if existing_user is not None:
+        return {'error': 'Username already taken: {}'.format(json_pack['username'])}, status.HTTP_406_NOT_ACCEPTABLE
+    try:
+        new_user = User(username=json_pack['username'], password=json_pack['password'])
+        db.session.add(new_user)
+        db.session.commit()
+    except Exception as e:
+        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
+        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
+               status.HTTP_500_INTERNAL_SERVER_ERROR
+    expire_time = datetime.timestamp(datetime.now() + timedelta(Config.cookie_expiration_time))
+    jwt_content = {'id': new_user.id, 'username': new_user.username, 'expires': expire_time}
+    token_bytes = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
+    token = token_bytes.decode("utf-8")
+    return {'token': token}, status.HTTP_200_OK
 
 
 @app.route('/logout', methods=['POST'])
