@@ -1,51 +1,61 @@
-from app import app
+from app import app, db
+from app.models import User
 from config import Config
-from datetime import datetime, timedelta
 from flask_api import status
-import json
+import jwt
 import unittest
-from tests.mock_database_service import mocked_requests_database_post
-from unittest import mock
 
 
 class UserModelCase(unittest.TestCase):
-    # Standard method
-    def test_feature_example_pass_or_fail(self):
+
+    def setUp(self):
+        self.good_user = User(username=Config.good_test_user, password=Config.good_test_password)
+        db.session.add(self.good_user)
+        db.session.commit()
         pass
 
-    @mock.patch('app.routes.requests.post', side_effect=mocked_requests_database_post)
-    def test_login_success(self, mock_post):
-        test_creds = {'username': Config.good_test_user, 'password': Config.good_test_password}
+    def tearDown(self):
+        db.session.delete(self.good_user)
+        db.session.commit()
+        pass
+
+    # Login Tests
+    def test_login_success(self):
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password}
         with app.test_client() as client:
-            response = client.post('/login', json=test_creds)
-            # TODO: Verify cookie for successful login - self.assertEqual() or such
+            response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_success(response.status_code))
+            json_response = response.get_json(force=True)
+            decoded_token = jwt.decode(bytes(json_response['token'], "utf-8"), Config.jwt_secret, algorithms=['HS256'])
+            self.assertTrue(decoded_token['username'] == Config.good_test_user)
 
-    @mock.patch('app.routes.requests.post', side_effect=mocked_requests_database_post)
-    def test_login_failure_bad_username(self, mock_post):
-        bad_creds = {'username': Config.bad_test_user, 'password': Config.bad_test_password}
+    def test_login_bad_json_fields(self):
+        test_credentials = {'Kasikil': 'Pope'}
         with app.test_client() as client:
-            response = client.post('/login', data=bad_creds)
+            response = client.post('/login', json=test_credentials)
+            self.assertTrue(status.is_server_error(response.status_code))
+
+    def test_login_no_json(self):
+        with app.test_client() as client:
+            response = client.post('/login')
             self.assertTrue(status.is_client_error(response.status_code))
 
-    @mock.patch('app.routes.requests.post', side_effect=mocked_requests_database_post)
-    def test_login_failure_bad_password(self, mock_post):
-        bad_creds = {'username': Config.good_test_user, 'password': Config.bad_test_password}
+    def test_login_failure_bad_username(self):
+        test_credentials = {'username': Config.bad_test_user, 'password': Config.bad_test_password}
         with app.test_client() as client:
-            response = client.post('/login', data=bad_creds)
+            response = client.post('/login', data=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
-    # TODO: Test authentication of the requester on login route
+    def test_login_failure_bad_password(self):
+        test_credentials = {'username': Config.good_test_user, 'password': Config.bad_test_password}
+        with app.test_client() as client:
+            response = client.post('/login', data=test_credentials)
+            self.assertTrue(status.is_client_error(response.status_code))
 
 
 """
-    # Test several of these methods for different failure cases
-    def test_login_failure(self):
-        bad_creds = {}
-        with app.test_client() as client:
-            response = client.post('/login', data=bad_creds)
-            self.assertTrue(status.is_client_error(response.status_code))
 
+    # TODO: Test authentication of the requester on login route
 
     def test_logout_success(self):
         with app.test_client() as client:

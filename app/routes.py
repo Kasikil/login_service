@@ -13,16 +13,19 @@ def login():
     try:
         json_pack = {'username': data['username'], 'password': data['password']}
     except KeyError as e:
-        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_500_INTERNAL_SERVER_ERROR
     try:
         login_user = User.query.filter_by(username=json_pack['username']).first()
     except Exception as e:
-        return {'error': e}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        # Not covered by a unit test as the only time this would be hit would be if we could not access the database
+        return {'error': 'Exception occurred accessing database: {}'.format(str(e))}, \
+               status.HTTP_500_INTERNAL_SERVER_ERROR
     if login_user is None:
         return {'error': 'No matched user found'}, status.HTTP_400_BAD_REQUEST
     if login_user.check_password(json_pack['password']):
         jwt_content = {'id': login_user.id, 'username': login_user.username}
-        token = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
+        token_bytes = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
+        token = token_bytes.decode("utf-8")
         return {'token': token}, status.HTTP_200_OK
     else:
         return {'error': 'Password entered does not match the record'}, status.HTTP_400_BAD_REQUEST
