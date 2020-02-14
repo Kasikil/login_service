@@ -48,13 +48,6 @@ def register():
     return {'token': token}, status.HTTP_200_OK
 
 
-@app.route('/logout', methods=['POST'])
-def logout():
-    # Lookup what logging out means. Probably something with returning
-    # a new expired cookie or a null cookie or who knows what they want here
-    pass
-
-
 @app.route('/reset', methods=['POST'])
 def reset():
     return {'error': 'Route not implemented'}, status.HTTP_501_NOT_IMPLEMENTED
