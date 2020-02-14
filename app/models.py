@@ -8,3 +8,6 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+    def check_password(self, submitted_password):
+        return submitted_password == self.password
