@@ -15,7 +15,7 @@ class UserModelCase(unittest.TestCase):
         pass
 
     def tearDown(self):
-        db.session.delete(self.good_user)
+        User.query.delete()
         db.session.commit()
         pass
 
@@ -43,24 +43,45 @@ class UserModelCase(unittest.TestCase):
     def test_login_failure_bad_username(self):
         test_credentials = {'username': Config.bad_test_user, 'password': Config.bad_test_password}
         with app.test_client() as client:
-            response = client.post('/login', data=test_credentials)
+            response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
     def test_login_failure_bad_password(self):
         test_credentials = {'username': Config.good_test_user, 'password': Config.bad_test_password}
         with app.test_client() as client:
-            response = client.post('/login', data=test_credentials)
+            response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
+    def test_login_authenticated_request(self):
+        pass
 
-"""
-
-    # TODO: Test authentication of the requester on login route
-
-    def test_logout_success(self):
+    # Register Tests
+    def test_register_success(self):
+        test_credentials = {'username': Config.new_user, 'password': Config.new_password}
         with app.test_client() as client:
-            response = client.post('/logout')
-"""
+            response = client.post('/register', json=test_credentials)
+            self.assertTrue(status.is_success(response.status_code))
+            json_response = response.get_json(force=True)
+            decoded_token = jwt.decode(bytes(json_response['token'], "utf-8"), Config.jwt_secret, algorithms=['HS256'])
+            self.assertTrue(decoded_token['username'] == Config.new_user)
+
+    def test_register_no_json(self):
+        with app.test_client() as client:
+            response = client.post('/registers')
+            self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_register_bad_json(self):
+        test_credentials = {'Kasikil': 'Pope'}
+        with app.test_client() as client:
+            response = client.post('/register', json=test_credentials)
+            self.assertTrue(status.is_server_error(response.status_code))
+
+    def test_register_existing_user(self):
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password}
+        with app.test_client() as client:
+            response = client.post('/register', json=test_credentials)
+            self.assertTrue(status.is_client_error(response.status_code))
+
 
 
 if __name__ == '__main__':
