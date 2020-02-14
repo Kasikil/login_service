@@ -6,3 +6,4 @@ class Config:
     bad_test_user = 'Kasi'
     bad_test_password = 'Chapped'
     jwt_secret = 'change_in_production_or_you_big_dumb'
+    cookie_expiration_time = 31

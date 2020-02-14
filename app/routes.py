@@ -1,5 +1,6 @@
 from app import app
 from config import Config
+from datetime import datetime, timedelta
 from flask import request
 from flask_api import status
 import jwt
@@ -23,7 +24,8 @@ def login():
     if login_user is None:
         return {'error': 'No matched user found'}, status.HTTP_400_BAD_REQUEST
     if login_user.check_password(json_pack['password']):
-        jwt_content = {'id': login_user.id, 'username': login_user.username}
+        expire_time = datetime.timestamp(datetime.now() + timedelta(Config.cookie_expiration_time))
+        jwt_content = {'id': login_user.id, 'username': login_user.username, 'expires': expire_time}
         token_bytes = jwt.encode(jwt_content, Config.jwt_secret, algorithm='HS256')
         token = token_bytes.decode("utf-8")
         return {'token': token}, status.HTTP_200_OK
@@ -62,5 +64,4 @@ def logout():
 
 @app.route('/reset', methods=['POST'])
 def reset():
-    # Implementation TBD
-    pass
+    return {'error': 'Route not implemented'}, status.HTTP_501_NOT_IMPLEMENTED
