@@ -21,7 +21,8 @@ class UserModelCase(unittest.TestCase):
 
     # Login Tests
     def test_login_success(self):
-        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password}
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password,
+                            'auth_token': Config.auth_token}
         with app.test_client() as client:
             response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_success(response.status_code))
@@ -41,23 +42,30 @@ class UserModelCase(unittest.TestCase):
             self.assertTrue(status.is_client_error(response.status_code))
 
     def test_login_failure_bad_username(self):
-        test_credentials = {'username': Config.bad_test_user, 'password': Config.bad_test_password}
+        test_credentials = {'username': Config.bad_test_user, 'password': Config.bad_test_password,
+                            'auth_token': Config.auth_token}
         with app.test_client() as client:
             response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
     def test_login_failure_bad_password(self):
-        test_credentials = {'username': Config.good_test_user, 'password': Config.bad_test_password}
+        test_credentials = {'username': Config.good_test_user, 'password': Config.bad_test_password,
+                            'auth_token': Config.auth_token}
         with app.test_client() as client:
             response = client.post('/login', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
-    def test_login_authenticated_request(self):
-        pass
+    def test_login_non_authenticated_request(self):
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password,
+                            'auth_token': Config.bad_test_token}
+        with app.test_client() as client:
+            response = client.post('/login', json=test_credentials)
+            self.assertTrue(status.is_client_error(response.status_code))
 
     # Register Tests
     def test_register_success(self):
-        test_credentials = {'username': Config.new_user, 'password': Config.new_password}
+        test_credentials = {'username': Config.new_user, 'password': Config.new_password,
+                            'auth_token': Config.auth_token}
         with app.test_client() as client:
             response = client.post('/register', json=test_credentials)
             self.assertTrue(status.is_success(response.status_code))
@@ -77,13 +85,18 @@ class UserModelCase(unittest.TestCase):
             self.assertTrue(status.is_client_error(response.status_code))
 
     def test_register_existing_user(self):
-        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password}
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password,
+                            'auth_token': Config.auth_token}
         with app.test_client() as client:
             response = client.post('/register', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
-    def test_register_authenticated_request(self):
-        pass
+    def test_register_non_authenticated_request(self):
+        test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password,
+                            'auth_token': Config.bad_test_token}
+        with app.test_client() as client:
+            response = client.post('/register', json=test_credentials)
+            self.assertTrue(status.is_client_error(response.status_code))
 
 
 if __name__ == '__main__':

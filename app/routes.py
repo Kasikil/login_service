@@ -12,9 +12,12 @@ import requests
 def login():
     data = request.get_json(force=True)
     try:
-        json_pack = {'username': data['username'], 'password': data['password']}
+        json_pack = {'username': data['username'], 'password': data['password'], 'auth_token': data['auth_token']}
     except KeyError as e:
         return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_406_NOT_ACCEPTABLE
+    if json_pack['auth_token'] != Config.auth_token:
+        return {'error': 'Invalid authentication. Client not authorized to access this server'}, \
+               status.HTTP_401_UNAUTHORIZED
     login_user = User.query.filter_by(username=json_pack['username']).first()
     if login_user is None:
         return {'error': 'No matched user found'}, status.HTTP_412_PRECONDITION_FAILED
@@ -32,9 +35,12 @@ def login():
 def register():
     data = request.get_json(force=True)
     try:
-        json_pack = {'username': data['username'], 'password': data['password']}
+        json_pack = {'username': data['username'], 'password': data['password'], 'auth_token': data['auth_token']}
     except KeyError as e:
         return {'error': '{} is an invalid key'.format(str(e))}, status.HTTP_406_NOT_ACCEPTABLE
+    if json_pack['auth_token'] != Config.auth_token:
+        return {'error': 'Invalid authentication. Client not authorized to access this server'}, \
+               status.HTTP_401_UNAUTHORIZED
     existing_user = User.query.filter_by(username=json_pack['username']).first()
     if existing_user is not None:
         return {'error': 'Username already taken: {}'.format(json_pack['username'])}, \
