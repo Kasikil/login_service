@@ -33,7 +33,7 @@ class UserModelCase(unittest.TestCase):
         test_credentials = {'Kasikil': 'Pope'}
         with app.test_client() as client:
             response = client.post('/login', json=test_credentials)
-            self.assertTrue(status.is_server_error(response.status_code))
+            self.assertTrue(status.is_client_error(response.status_code))
 
     def test_login_no_json(self):
         with app.test_client() as client:
@@ -74,7 +74,7 @@ class UserModelCase(unittest.TestCase):
         test_credentials = {'Kasikil': 'Pope'}
         with app.test_client() as client:
             response = client.post('/register', json=test_credentials)
-            self.assertTrue(status.is_server_error(response.status_code))
+            self.assertTrue(status.is_client_error(response.status_code))
 
     def test_register_existing_user(self):
         test_credentials = {'username': Config.good_test_user, 'password': Config.good_test_password}
