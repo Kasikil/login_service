@@ -82,6 +82,8 @@ class UserModelCase(unittest.TestCase):
             response = client.post('/register', json=test_credentials)
             self.assertTrue(status.is_client_error(response.status_code))
 
+    def test_register_authenticated_request(self):
+        pass
 
 
 if __name__ == '__main__':
