@@ -1,0 +1,119 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: login microservice
+servers:
+  - url: http://localhost:5000/
+paths:
+  /login:
+    post:
+      summary: Checks login credendials
+      operationId: checksCreds
+      tags:
+        - login
+      requestBody:
+        description: Username, Password, and Authorization Token for the request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postBody'
+      responses:
+        202:
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/tokenJson'
+        401:
+          description: Auth token does not match. Non authorized access attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg'
+        406:
+          description: Request did not contain username, password, and auth_token
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg' 
+        412:
+          description: Username supplied does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg'
+        417:
+          description: Password supplied does not match record
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg'
+  /register:
+    post:
+      summary: Attemps to register a new user
+      operationId: registerCreds
+      tags:
+        - register
+      requestBody:
+        description: Username, Password, and Authorization Token to Register a New User
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postBody'
+      responses:
+        201:
+          description: User registered and logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/tokenJson'
+        401:
+          description: Auth token does not match. Non authorized access attempt
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg'
+        406:
+          description: Request did not contain username, password, and auth_token
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg' 
+        412:
+          description: Username supplied already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/errorMsg'
+components:
+  schemas:
+    postBody:
+      type: object
+      required:
+        - username
+        - password
+        - auth_token
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        auth_token:
+          type: string
+    tokenJson:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    errorMsg:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+      
